@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0b1020">
+  <title>Moto Rush 3D | First Year Project</title>
+<meta name="description" content="Moto Rush 3D professional first-year 3D motorcycle racing project.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+:root{--bg:#080b14;--panel:rgba(17,23,39,.88);--line:rgba(255,255,255,.12);--text:#f7f9ff;--muted:#9da7bb;--accent:#ff3b30;--accent2:#ffb300;--green:#25d366}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+button{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px;background:radial-gradient(circle at 50% 15%,#25304c 0,#0d1220 42%,#070a11 100%);overflow:auto}
+.hidden{display:none!important}
+#loading{position:fixed;inset:0;z-index:99;background:#080b14;display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center;letter-spacing:2px;font-size:12px}
+.loader-ring{width:48px;height:48px;border:4px solid #26304a;border-top-color:#ff3b30;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.brand{text-align:center;margin-bottom:20px}.brand-kicker{font-size:11px;font-weight:800;letter-spacing:2.6px;color:#ffb300}.brand h1{font-size:clamp(38px,7vw,76px);line-height:.9;margin:8px 0 12px;font-weight:900;letter-spacing:-4px;text-shadow:0 8px 35px rgba(0,0,0,.35)}.brand h1 span{color:#ff3b30}.brand p{margin:0;color:#aeb8cc}
+.panel,.result-card{width:min(960px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:25px;box-shadow:0 25px 80px #0008;backdrop-filter:blur(18px)}
+.section-title{font-size:11px;font-weight:900;letter-spacing:2px;color:#b8c2d8;margin-bottom:10px}.section-title.small{margin-top:18px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.theme-card,.bike-card{background:#0d1321;border:1px solid var(--line);border-radius:17px;padding:14px;text-align:left;transition:.2s;position:relative;overflow:hidden}.theme-card:hover,.bike-card:hover{transform:translateY(-2px);border-color:#ffffff35}.theme-card.active,.bike-card.active{border-color:#ffb300;box-shadow:0 0 0 2px #ffb30022}.theme-preview{height:80px;border-radius:11px;margin-bottom:10px;position:relative;overflow:hidden}.theme-preview.desert{background:linear-gradient(#7cc7f3 0 55%,#f59b20 56%);}.theme-preview.city{background:linear-gradient(#10192e,#384b69);}.theme-preview.mountain{background:linear-gradient(#83c8f3 0 55%,#55765e 56%)}.theme-preview.snow{background:linear-gradient(#b9dcf2 0 55%,#dbe8ee 56%)}.theme-preview:after{content:"";position:absolute;left:28%;right:28%;bottom:0;height:70%;background:linear-gradient(105deg,transparent 0 45%,#292929 46% 54%,transparent 55%);opacity:.9}
+.card-title{font-weight:800}.card-sub{font-size:11px;color:var(--muted);margin-top:3px}.check{position:absolute;right:10px;top:10px;background:#ffb300;color:#141414;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;font-size:12px}
+.row-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:24px}.segmented{display:flex;background:#0a0e18;padding:4px;border-radius:12px}.segmented button{flex:1;padding:11px;border-radius:9px;background:transparent;color:#8994aa;font-weight:800;font-size:12px}.segmented button.active{background:#202a40;color:white}.bike-cards{display:flex;gap:9px}.bike-card{flex:1;padding:10px}.bike-emoji{font-size:32px}.bike-card .card-title{font-size:12px}.bike-card .card-sub{font-size:10px}
+.primary,.secondary{width:100%;padding:14px 18px;border-radius:13px;font-weight:900;margin-top:20px}.primary{background:linear-gradient(135deg,#ff3b30,#ff8a00);box-shadow:0 10px 30px #ff3b3038}.primary:hover{filter:brightness(1.1)}.secondary{background:#141b2c;border:1px solid var(--line);margin-top:10px}.menu-links{display:flex;justify-content:center;gap:20px;margin-top:15px}.menu-links button{background:none;color:#8e9ab0;font-size:11px;font-weight:800}.menu-links button:hover{color:white}
+#game{position:fixed;inset:0;background:#000}#gameCanvas{width:100%;height:100%;display:block}
+#hud{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;padding:15px;pointer-events:none}.hud-left,.hud-right{display:flex;gap:7px}.hud-pill,.hud-btn{background:#090e19c9;border:1px solid #ffffff20;border-radius:12px;padding:9px 12px;backdrop-filter:blur(10px);font-size:13px}.hud-pill{display:flex;gap:7px;align-items:center}.hud-btn{pointer-events:auto;width:42px;height:42px}.hud-center{text-align:center;min-width:180px}.hud-center #levelLabel{font-size:11px;font-weight:900;letter-spacing:2px;text-shadow:0 2px 10px #000}.hud-center #progressWrap{height:5px;background:#0008;border-radius:5px;margin-top:7px;overflow:hidden}.hud-center #progress{height:100%;width:0;background:linear-gradient(90deg,#ff3b30,#ffb300)}
+#powerHud{position:absolute;left:15px;bottom:17px;display:flex;align-items:center;gap:8px}.power{background:#090e19c9;border:1px solid #ffffff20;padding:8px 10px;border-radius:12px;display:flex;align-items:center;gap:8px}.bar{width:100px;height:8px;border-radius:5px;background:#252d3e;overflow:hidden}.bar div{height:100%;width:100%;background:#ffb300}.power-badge{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#090e19c9;border:1px solid #ffffff20;opacity:1}.power-badge.off{opacity:.35}
+#touchControls{position:absolute;inset:auto 15px 15px;display:flex;justify-content:space-between;pointer-events:none}.touch-left,.touch-right{display:flex;gap:8px}.touchControls button,#touchControls button{pointer-events:auto;width:54px;height:54px;border-radius:16px;background:#0a0f1bd4;border:1px solid #ffffff25;font-size:20px;backdrop-filter:blur(8px)}#touchControls .nitro{background:#ff3b30aa}.touch-right{align-items:end}
+.overlay{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;padding:20px;z-index:20;backdrop-filter:blur(7px)}.modal{width:min(440px,94vw);background:#111827;border:1px solid var(--line);border-radius:22px;padding:28px;text-align:center;box-shadow:0 25px 80px #000}.modal.wide{width:min(650px,94vw);text-align:left}.modal-icon,.result-icon{font-size:45px}.modal h2,.result-card h2{margin:10px 0;font-size:30px}.close{position:absolute;margin:-15px 0 0 250px;background:#222b3c;border-radius:50%;width:32px;height:32px;font-size:22px}.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}.help-grid>div{background:#0c1320;padding:16px;border-radius:14px}.help-grid p{color:#aab4c8;font-size:13px;line-height:1.7}
+.result-card{text-align:center;width:min(560px,94vw)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:25px 0}.stats div{background:#0c1320;padding:14px 5px;border-radius:12px}.stats span{display:block;color:#8994aa;font-size:9px;letter-spacing:1px}.stats b{font-size:20px}.tech-list{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.tech-list span{padding:7px 10px;background:#202a40;border-radius:20px;font-size:11px;font-weight:800}.muted{color:#9aa6ba;line-height:1.7}
+@media(max-width:720px){.panel{padding:16px}.cards{grid-template-columns:1fr 1fr 1fr}.theme-preview{height:55px}.row-grid{grid-template-columns:1fr}.bike-cards{margin-bottom:0}.brand{margin-bottom:12px}.brand h1{letter-spacing:-2px}.hud-pill{padding:7px 9px}.hud-center{min-width:120px}.hud-left .hud-pill:nth-child(3){display:none}.stats{grid-template-columns:1fr 1fr}.help-grid{grid-template-columns:1fr}.close{right:22px;position:absolute;margin:0}}
+@media(min-width:900px){#touchControls{opacity:.45}}
+
+
+/* V2 arcade-speed polish */
+#gameCanvas{filter:saturate(1.12) contrast(1.04)}
+#hud .hud-pill{box-shadow:0 5px 20px #0005}
+
+
+.career-strip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:15px 0 8px;padding:10px 12px;background:#0a0f1b;border:1px solid var(--line);border-radius:13px;font-size:11px;color:#b7c0d2}
+.career-strip button{margin-left:auto;background:#202a40;padding:9px 12px;border-radius:9px;font-weight:900}
+.path-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 4px}.path-card{background:#0b1220;border:1px solid var(--line);padding:10px;border-radius:11px;text-align:left}.path-card.active{border-color:#ffb300;background:#211b0d}.path-card.locked{opacity:.6}.path-card b{display:block;font-size:11px}.path-card small{display:block;color:#8994aa;font-size:9px;margin-top:4px}
+.locked{filter:saturate(.7)}
+.garage-modal{max-width:850px}.garage-wallet{display:inline-block;background:#201a08;border:1px solid #ffb30055;color:#ffd86b;padding:8px 12px;border-radius:20px;font-size:12px}
+.garage-bikes{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:18px 0}.garage-bike{background:#0b1220;border:1px solid var(--line);border-radius:13px;padding:12px;text-align:left}.garage-bike.selected{border-color:#ffb300;box-shadow:0 0 0 2px #ffb30022}.garage-bike-icon{font-size:30px}.garage-bike b{display:block;font-size:12px;margin:5px 0}.garage-bike small{display:block;color:#ffb300}.garage-bike span{display:block;color:#8994aa;font-size:9px;margin-top:5px}.upgrade-panel{background:#0a101c;border:1px solid var(--line);border-radius:16px;padding:15px}.selected-bike-title{display:flex;justify-content:space-between;font-weight:900}.selected-bike-title span:last-child{color:#ffb300;font-size:11px}.upgrade-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.upgrade-grid button{background:#151e30;border:1px solid var(--line);padding:13px;border-radius:12px;text-align:left}.upgrade-grid b,.upgrade-grid small{display:block}.upgrade-grid b{font-size:10px;margin-top:5px}.upgrade-grid small{font-size:9px;color:#8f9ab0;margin-top:3px}
+@media(max-width:720px){.path-cards{grid-template-columns:1fr 1fr}.garage-bikes{grid-template-columns:1fr 1fr}.upgrade-grid{grid-template-columns:1fr 1fr}.career-strip button{margin-left:0}}
+
+</style>
+</head>
+<body>
+  <div id="loading"><div class="loader-ring"></div><b>LOADING MOTO RUSH 3D</b></div>
+
+  <div id="menu" class="screen">
+    <div class="brand">
+      <div class="brand-kicker">FIRST YEAR PROJECT • 3D WEB GAME</div>
+      <h1>MOTO <span>RUSH</span> 3D</h1>
+      <p>Race. Dodge. Boost. Conquer every route.</p>
+    </div>
+
+    <div class="panel menu-panel">
+      <div class="section-title">CHOOSE YOUR WORLD</div>
+      <div id="themeCards" class="cards"></div>
+
+      <div class="row-grid">
+        <div>
+          <div class="section-title small">GAME MODE</div>
+          <div id="modeButtons" class="segmented">
+            <button data-mode="levels" class="active">LEVELS</button>
+            <button data-mode="endless">ENDLESS</button>
+          </div>
+        </div>
+        <div>
+          <div class="section-title small">BIKE</div>
+          <div id="bikeCards" class="bike-cards"></div>
+        </div>
+      </div>
+
+      <div class="career-strip"><span>🪙 <b id="walletCoins">0</b> COINS</span><span>🏁 LEVEL <b id="walletLevel">1</b>/30</span><button id="garageBtn">🏍️ GARAGE</button></div>
+      <div id="pathCards" class="path-cards"></div>
+      <button id="startBtn" class="primary">START RIDE <span>➜</span></button>
+      <div class="menu-links">
+        <button id="howBtn">HOW TO PLAY</button>
+        <button id="aboutBtn">ABOUT PROJECT</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="game" class="hidden">
+    <canvas id="gameCanvas"></canvas>
+    <div id="hud">
+      <div class="hud-left">
+        <div class="hud-pill"><span>🏆</span><b id="score">0</b></div>
+        <div class="hud-pill"><span>🪙</span><b id="coins">0</b></div>
+        <div class="hud-pill"><span>❤️</span><b id="health">100</b></div>
+      </div>
+      <div class="hud-center">
+        <div id="levelLabel">LEVEL 1</div>
+        <div id="progressWrap"><div id="progress"></div></div>
+      </div>
+      <div class="hud-right">
+        <button id="pauseBtn" class="hud-btn">Ⅱ</button>
+      </div>
+    </div>
+
+    <div id="powerHud">
+      <div class="power"><span>⚡</span><div class="bar"><div id="nitroBar"></div></div></div>
+      <div id="shieldBadge" class="power-badge off">🛡️</div>
+      <div id="magnetBadge" class="power-badge off">🧲</div>
+    </div>
+
+    <div id="touchControls">
+      <div class="touch-left">
+        <button data-control="left">◀</button>
+        <button data-control="right">▶</button>
+      </div>
+      <div class="touch-right">
+        <button data-control="brake">▼</button>
+        <button data-control="nitro" class="nitro">⚡</button>
+        <button data-control="accelerate">▲</button>
+      </div>
+    </div>
+
+    <div id="pauseOverlay" class="overlay hidden">
+      <div class="modal">
+        <div class="modal-icon">Ⅱ</div>
+        <h2>GAME PAUSED</h2>
+        <button id="resumeBtn" class="primary">RESUME</button>
+        <button id="restartBtn" class="secondary">RESTART</button>
+        <button id="quitBtn" class="secondary">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result" class="screen hidden">
+    <div class="result-card">
+      <div id="resultIcon" class="result-icon">🏁</div>
+      <div class="brand-kicker">RACE COMPLETE</div>
+      <h2 id="resultTitle">LEVEL COMPLETE!</h2>
+      <div class="stats">
+        <div><span>SCORE</span><b id="finalScore">0</b></div>
+        <div><span>COINS</span><b id="finalCoins">0</b></div>
+        <div><span>TIME</span><b id="finalTime">0s</b></div>
+        <div><span>BEST</span><b id="bestScore">0</b></div>
+      </div>
+      <button id="nextBtn" class="primary">NEXT RIDE ➜</button>
+      <button id="resultMenuBtn" class="secondary">MAIN MENU</button>
+    </div>
+  </div>
+
+
+  <div id="garageModal" class="overlay hidden">
+    <div class="modal garage-modal">
+      <button class="close" data-close="garageModal">×</button>
+      <div class="brand-kicker">🏍️ WORKSHOP</div>
+      <h2>GARAGE</h2>
+      <div class="garage-wallet">🪙 <b id="garageCoins">0</b> coins</div>
+      <div id="garageBikes" class="garage-bikes"></div>
+      <div id="upgradePanel" class="upgrade-panel hidden">
+        <div class="selected-bike-title"><span id="selectedBikeName">Bike</span><span id="selectedBikePrice"></span></div>
+        <div class="upgrade-grid">
+          <button data-upgrade="speed">⚡<b>ENGINE</b><small id="upSpeed"></small></button>
+          <button data-upgrade="handling">🎯<b>HANDLING</b><small id="upHandling"></small></button>
+          <button data-upgrade="health">❤️<b>ARMOR</b><small id="upHealth"></small></button>
+          <button data-upgrade="nitro">🔥<b>NITRO</b><small id="upNitro"></small></button>
+        </div>
+        <button id="upgradeBuy" class="primary">UPGRADE • <span id="upgradeCost">250</span> 🪙</button>
+      </div>
+    </div>
+  </div>
+  <div id="howModal" class="overlay hidden">
+    <div class="modal wide">
+      <button class="close" data-close="howModal">×</button>
+      <h2>HOW TO PLAY</h2>
+      <div class="help-grid">
+        <div><b>⌨️ Keyboard</b><p>W / ↑ Accelerate<br>S / ↓ Brake<br>A,D / ←,→ Steer<br>SPACE Nitro<br>P Pause</p></div>
+        <div><b>📱 Touch</b><p>Use the on-screen buttons to steer, brake, accelerate and activate Nitro.</p></div>
+        <div><b>🪙 Collect</b><p>Coins increase your score. The magnet attracts nearby coins.</p></div>
+        <div><b>🛡️ Survive</b><p>Shield blocks collisions. Avoid barriers, cars and rocks.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="aboutModal" class="overlay hidden">
+    <div class="modal wide">
+      <button class="close" data-close="aboutModal">×</button>
+      <h2>ABOUT THE PROJECT</h2>
+      <p><b>Moto Rush 3D</b> is a browser-based 3D motorcycle racing game created as a first-year academic project.</p>
+      <div class="tech-list">
+        <span>HTML5</span><span>CSS3</span><span>JavaScript</span><span>Three.js</span><span>Git</span><span>GitHub Pages</span>
+      </div>
+      <p class="muted">Concepts demonstrated: 3D rendering, game loop, keyboard/touch input, collision detection, scoring, levels, power-ups, local storage and responsive UI.</p>
+    </div>
+  </div>
+
+  <script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+const themes = {
+  desert:{name:"Desert Rush",sub:"Golden dunes & stunt barriers",price:0,sky:0x79c5f1,ground:0xd88920,road:0xe59a24,edge:0xf3c44e,decor:0xc06b22,fog:0x8fbfe5},
+  city:{name:"City Rider",sub:"Neon streets & traffic",price:1200,sky:0x10182a,ground:0x172033,road:0x303846,edge:0xffa31a,decor:0x53627a,fog:0x182338},
+  mountain:{name:"Mountain Rush",sub:"Cliffs, rocks & bridges",price:2500,sky:0x8fcdf0,ground:0x526b54,road:0x5d5f60,edge:0xd6a24a,decor:0x34513b,fog:0x9ec9d9},
+  snow:{name:"Ice Valley",sub:"Frozen road & sharp turns",price:4500,sky:0xbadcf5,ground:0xc9d7df,road:0x8ea5b7,edge:0xffffff,decor:0x5d8296,fog:0xc8ddeb}
+};
+const bikes = [
+  {name:"Street X",sub:"Balanced",price:0,color:0xe83333,speed:1,handling:1},
+  {name:"Phantom",sub:"Fast",price:900,color:0x5b7cff,speed:1.16,handling:.92},
+  {name:"Blaze",sub:"Agile",price:1800,color:0xffa20d,speed:1.05,handling:1.18},
+  {name:"Volt R",sub:"Super Fast",price:3500,color:0x18d9a8,speed:1.30,handling:1.05},
+  {name:"Titan",sub:"Max Power",price:6500,color:0xb8b8c8,speed:1.42,handling:1.12}
+];
+
+const SAVE_KEY="motoRushCareerV3";
+const defaultProfile={
+  coins:0,
+  unlockedBikes:[0],
+  unlockedThemes:["desert"],
+  level:1,
+  best:0,
+  upgrades:{0:{speed:0,handling:0,health:0,nitro:0}}
+};
+let profile=JSON.parse(localStorage.getItem(SAVE_KEY)||"null")||structuredClone(defaultProfile);
+profile.upgrades ||= {0:{speed:0,handling:0,health:0,nitro:0}};
+profile.upgrades[0] ||= {speed:0,handling:0,health:0,nitro:0};
+function saveProfile(){localStorage.setItem(SAVE_KEY,JSON.stringify(profile));}
+let state={theme:"desert",mode:"levels",bike:0,level:1,score:0,coins:0,health:100,nitro:100,shield:0,magnet:0,distance:0,time:0,running:false,paused:false,speed:0,steer:0};
+let scene,camera,renderer,clock;
+let bike, road, roadSegments=[], obstacles=[], collectibles=[], powerups=[], scenery=[];
+let audioCtx=null;
+let best=Number(localStorage.getItem("motoRushBest")||0);
+
+function renderSelectors(){
+  const themeEntries=Object.entries(themes);
+  $("#themeCards").innerHTML=themeEntries.map(([k,t])=>{
+    const unlocked=profile.unlockedThemes.includes(k);
+    return `<button class="theme-card ${k===state.theme?"active":""} ${unlocked?"":"locked"}" data-theme="${k}">
+      <div class="theme-preview ${k}"></div>
+      <div class="card-title">${unlocked?"":"🔒 "}${t.name}</div>
+      <div class="card-sub">${unlocked?t.sub:`Unlock for ${t.price.toLocaleString()} 🪙`}</div>
+      ${k===state.theme&&unlocked?'<div class="check">✓</div>':''}
+    </button>`;
+  }).join("");
+  $("#bikeCards").innerHTML=bikes.map((b,i)=>{
+    const unlocked=profile.unlockedBikes.includes(i);
+    return `<button class="bike-card ${i===state.bike?"active":""} ${unlocked?"":"locked"}" data-bike="${i}">
+      <div class="bike-emoji">🏍️</div><div class="card-title">${unlocked?b.name:"🔒 "+b.name}</div>
+      <div class="card-sub">${unlocked?b.sub:`${b.price.toLocaleString()} 🪙`}</div>
+      ${i===state.bike&&unlocked?'<div class="check">✓</div>':''}
+    </button>`;
+  }).join("");
+  renderCareerUI();
+}
+function renderCareerUI(){
+  $("#walletCoins").textContent=profile.coins.toLocaleString();
+  $("#walletLevel").textContent=Math.min(30,profile.level);
+  const paths=[
+    ["desert","🏜️ Desert Route","FREE • 10 levels"],
+    ["city","🌆 Neon City","1,200 🪙 • 10 levels"],
+    ["mountain","🏔️ Mountain Pass","2,500 🪙 • 5 levels"],
+    ["snow","❄️ Ice Valley","4,500 🪙 • 5 levels"]
+  ];
+  $("#pathCards").innerHTML=paths.map(([k,n,d])=>{
+    const u=profile.unlockedThemes.includes(k);
+    return `<button class="path-card ${state.theme===k?"active":""} ${u?"":"locked"}" data-path="${k}"><b>${n}</b><small>${u?"OPEN":d}</small></button>`;
+  }).join("");
+}
+renderSelectors();
+$("#themeCards").onclick=e=>{
+  const c=e.target.closest("[data-theme]"); if(!c)return;
+  const k=c.dataset.theme, t=themes[k];
+  if(!profile.unlockedThemes.includes(k)){
+    if(profile.coins<t.price){sound(120,.1,"sawtooth");return}
+    profile.coins-=t.price;profile.unlockedThemes.push(k);saveProfile();sound(880,.12,"triangle");
+  }
+  state.theme=k;renderSelectors();
+};
+$("#bikeCards").onclick=e=>{
+  const c=e.target.closest("[data-bike]"); if(!c)return;
+  const i=+c.dataset.bike,b=bikes[i];
+  if(!profile.unlockedBikes.includes(i)){
+    if(profile.coins<b.price){sound(120,.1,"sawtooth");return}
+    profile.coins-=b.price;profile.unlockedBikes.push(i);profile.upgrades[i] ||= {speed:0,handling:0,health:0,nitro:0};saveProfile();sound(880,.12,"triangle");
+  }
+  state.bike=i;renderSelectors();
+};
+$("#pathCards").onclick=e=>{
+  const c=e.target.closest("[data-path]");if(!c)return;
+  const k=c.dataset.path,t=themes[k];
+  if(!profile.unlockedThemes.includes(k)){
+    if(profile.coins<t.price){sound(120,.1,"sawtooth");return}
+    profile.coins-=t.price;profile.unlockedThemes.push(k);saveProfile();sound(880,.12,"triangle");
+  }
+  state.theme=k;renderCareerUI();renderSelectors();
+};
+
+let garageBikeIndex=0, garageUpgradeType="speed";
+function renderGarage(){
+  $("#garageCoins").textContent=profile.coins.toLocaleString();
+  $("#garageBikes").innerHTML=bikes.map((b,i)=>{
+    const u=profile.unlockedBikes.includes(i);
+    const selected=i===garageBikeIndex;
+    return `<button class="garage-bike ${selected?"selected":""}" data-garage-bike="${i}">
+      <div class="garage-bike-icon">🏍️</div>
+      <b>${u?b.name:"🔒 "+b.name}</b>
+      <small>${u?"OWNED":b.price.toLocaleString()+" 🪙"}</small>
+      <span>SPD ${Math.round(b.speed*100)} • CTRL ${Math.round(b.handling*100)}</span>
+    </button>`;
+  }).join("");
+  const b=bikes[garageBikeIndex], u=profile.unlockedBikes.includes(garageBikeIndex);
+  $("#upgradePanel").classList.toggle("hidden",!u);
+  if(!u)return;
+  const up=profile.upgrades[garageBikeIndex] ||= {speed:0,handling:0,health:0,nitro:0};
+  $("#selectedBikeName").textContent=b.name;
+  $("#selectedBikePrice").textContent=`Base SPD ${Math.round(b.speed*100)}%`;
+  $("#upSpeed").textContent=`Level ${up.speed}/5`;
+  $("#upHandling").textContent=`Level ${up.handling}/5`;
+  $("#upHealth").textContent=`Level ${up.health}/5`;
+  $("#upNitro").textContent=`Level ${up.nitro}/5`;
+  const cost=250+(up[garageUpgradeType]||0)*175;
+  $("#upgradeCost").textContent=cost.toLocaleString();
+}
+$("#garageBtn").onclick=()=>{garageBikeIndex=state.bike;renderGarage();show("#garageModal")};
+$("#garageBikes").onclick=e=>{
+  const c=e.target.closest("[data-garage-bike]");if(!c)return;
+  const i=+c.dataset.garageBike;
+  if(!profile.unlockedBikes.includes(i)){
+    const price=bikes[i].price;
+    if(profile.coins<price){sound(100,.12,"sawtooth");return}
+    profile.coins-=price;profile.unlockedBikes.push(i);profile.upgrades[i]={speed:0,handling:0,health:0,nitro:0};saveProfile();sound(900,.15,"triangle");
+  }
+  garageBikeIndex=i;state.bike=i;renderGarage();renderSelectors();
+};
+$(".upgrade-grid")?.addEventListener("click",e=>{
+  const b=e.target.closest("[data-upgrade]");if(!b)return;
+  garageUpgradeType=b.dataset.upgrade;renderGarage();
+});
+$("#upgradeBuy").onclick=()=>{
+  const up=profile.upgrades[garageBikeIndex] ||= {speed:0,handling:0,health:0,nitro:0};
+  if(up[garageUpgradeType]>=5)return;
+  const cost=250+up[garageUpgradeType]*175;
+  if(profile.coins<cost){sound(100,.12,"sawtooth");return}
+  profile.coins-=cost;up[garageUpgradeType]++;saveProfile();sound(980,.12,"triangle");renderGarage();renderSelectors();
+};
+
+$("#modeButtons").onclick=e=>{const b=e.target.closest("[data-mode]");if(!b)return;state.mode=b.dataset.mode;$$("#modeButtons button").forEach(x=>x.classList.toggle("active",x===b))};
+
+function sound(freq=440,dur=.08,type="sine"){
+  try{audioCtx ||= new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended')audioCtx.resume(); const o=audioCtx.createOscillator(),g=audioCtx.createGain(),f=audioCtx.createBiquadFilter(); o.type=type;o.frequency.value=freq;f.type='lowpass';f.frequency.value=1800;g.gain.setValueAtTime(.018,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);o.connect(f);f.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur)}catch{}
+}
+function show(id){$(id).classList.remove("hidden")} function hide(id){$(id).classList.add("hidden")}
+
+function init3D(){
+  scene=new THREE.Scene(); camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,500); camera.position.set(0,4.5,8.8);
+  renderer=new THREE.WebGLRenderer({antialias:true,canvas:$("#gameCanvas")});renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
+  clock=new THREE.Clock();
+  scene.add(new THREE.HemisphereLight(0xbddcff,0x263018,2.2));
+  const sun=new THREE.DirectionalLight(0xffffff,2.6);sun.position.set(-8,15,8);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+  buildWorld();
+  animate();
+}
+function mat(c,rough=1){return new THREE.MeshStandardMaterial({color:c,roughness:rough,metalness:.08})}
+function box(w,h,d,c){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.castShadow=true;m.receiveShadow=true;return m}
+function cyl(r,h,c,rot=true){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,20),mat(c));m.castShadow=true;if(rot)m.rotation.z=Math.PI/2;return m}
+
+function buildBike(){
+  if(bike)scene.remove(bike); bike=new THREE.Group();
+  const b=bikes[state.bike];
+  const body=box(.9,.38,1.9,b.color);body.position.y=.72;body.position.z=.1;bike.add(body);
+  const tank=box(.68,.3,.75,0x171a22);tank.position.set(0,.97,.05);bike.add(tank);
+  const seat=box(.56,.15,.7,0x111318);seat.position.set(0,1.05,.55);bike.add(seat);
+  const front=box(.45,.55,.4,b.color);front.position.set(0,.9,-.86);front.rotation.x=-.2;bike.add(front);
+  const wheelMat=mat(0x090b0e);
+  for(const z of [-.72,.8]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.16,24),wheelMat);w.rotation.z=Math.PI/2;w.position.set(0,.38,z);w.castShadow=true;bike.add(w)}
+  const rider=box(.48,.72,.45,0x20242d);rider.position.set(0,1.4,.48);rider.rotation.x=-.18;bike.add(rider);
+  const helmet=new THREE.Mesh(new THREE.SphereGeometry(.27,18,14),mat(0xf2f4f8));helmet.position.set(0,1.82,.25);bike.add(helmet);
+  const visor=box(.36,.13,.12,0x151a25);visor.position.set(0,1.8,.01);bike.add(visor);
+  bike.position.set(0,0,5.5);scene.add(bike);
+}
+function clearWorld(){
+  [...roadSegments,...obstacles,...collectibles,...powerups,...scenery].forEach(o=>scene.remove(o));
+  roadSegments=[];obstacles=[];collectibles=[];powerups=[];scenery=[];
+}
+function buildWorld(){
+  clearWorld(); const t=themes[state.theme];
+  scene.background=new THREE.Color(t.sky);scene.fog=new THREE.Fog(t.fog,30,180);
+  const ground=box(220,.3,260,t.ground);ground.position.set(0,-.25,-70);scene.add(ground);scenery.push(ground);
+  for(let i=0;i<30;i++){
+    const z=5-i*8;
+    const seg=box(8,.18,8,t.road);seg.position.set(0,0,z);scene.add(seg);roadSegments.push(seg);
+    const l=box(.45,.22,8,t.edge),r=l.clone();l.position.set(-4.2,.08,z);r.position.set(4.2,.08,z);scene.add(l,r);roadSegments.push(l,r);
+    if(i%2===0){const line=box(.12,.025,3,0xffe9a0);line.position.set(0,.11,z);scene.add(line);roadSegments.push(line)}
+  }
+  for(let i=0;i<70;i++) spawnScenery(-i*11-5);
+  buildBike();
+}
+function spawnScenery(z){
+  const t=themes[state.theme];
+  for(const side of [-1,1]){
+    const x=side*(6+Math.random()*6);
+    let o;
+    if(state.theme==="city"){
+      o=box(2+Math.random()*2,3+Math.random()*8,2+Math.random()*2,t.decor);o.position.set(x,o.geometry.parameters.height/2,z);o.material=mat(t.decor); 
+      const w=box(.3,.45,.2,0xffd65a);w.position.set(x-side*1.01,o.position.y+.5,z);o.add(w);
+    }else if(state.theme==="mountain"){
+      o=new THREE.Mesh(new THREE.DodecahedronGeometry(1+Math.random()*1.4,0),mat(t.decor));o.position.set(x,.8,z);
+    }else{
+      o=new THREE.Mesh(new THREE.ConeGeometry(1.1+Math.random(),2.5+Math.random(),8),mat(Math.random()>.5?0x2f6d32:0x9b5425));o.position.set(x,1,z);
+    }
+    o.castShadow=true;scene.add(o);scenery.push(o);
+  }
+}
+function spawnObstacle(z){
+  const type=Math.random();
+  const x=(Math.random()-.5)*6.3;
+  let o;
+  if(type<.34){o=box(1.8,1.1,.8, state.theme==="city"?0x3d495b:0xe34234);o.userData.kind="car";o.position.set(x,.65,z)}
+  else if(type<.68){o=box(2.3,.55,.7,0x20242c);o.userData.kind="barrier";o.position.set(x,.42,z)}
+  else{o=new THREE.Mesh(new THREE.DodecahedronGeometry(.7,0),mat(0x57514a));o.userData.kind="rock";o.position.set(x,.6,z)}
+  o.castShadow=true;o.userData.hit=false;scene.add(o);obstacles.push(o);
+}
+function spawnCoin(z){
+  const x=(Math.random()-.5)*6.5;const o=new THREE.Mesh(new THREE.TorusGeometry(.28,.09,10,18),mat(0xffd43b));o.rotation.x=Math.PI/2;o.position.set(x,1,z);o.userData.kind="coin";scene.add(o);collectibles.push(o)
+}
+function spawnPower(z){
+  const x=(Math.random()-.5)*6;const types=["shield","magnet","health","nitro"];const kind=types[Math.floor(Math.random()*types.length)];
+  const colors={shield:0x57a6ff,magnet:0xd34cff,health:0x34e37c,nitro:0xff8b18};
+  const o=new THREE.Mesh(new THREE.IcosahedronGeometry(.38,1),mat(colors[kind]));o.position.set(x,1,z);o.userData.kind=kind;scene.add(o);powerups.push(o)
+}
+function populate(){
+  for(let i=0;i<95;i++){const z=-15-i*8-Math.random()*5;if(Math.random()<.72)spawnObstacle(z);if(Math.random()<.72)spawnCoin(z-3);if(Math.random()<.16)spawnPower(z-5)}
+}
+
+const keys={left:false,right:false,accelerate:true,brake:false,nitro:false};
+function setControl(k,v){keys[k]=v}
+addEventListener("keydown",e=>{
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();
+  if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")setControl("left",true);
+  if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")setControl("right",true);
+  if(e.key==="ArrowUp"||e.key.toLowerCase()==="w")setControl("accelerate",true);
+  if(e.key==="ArrowDown"||e.key.toLowerCase()==="s")setControl("brake",true);
+  if(e.key===" ")setControl("nitro",true);
+  if(e.key.toLowerCase()==="p")togglePause();
+});
+addEventListener("keyup",e=>{
+  if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")setControl("left",false);
+  if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")setControl("right",false);
+  if(e.key==="ArrowDown"||e.key.toLowerCase()==="s")setControl("brake",false);
+  if(e.key===" ")setControl("nitro",false);
+});
+$$("[data-control]").forEach(b=>{
+  const k=b.dataset.control;
+  const on=e=>{e.preventDefault();setControl(k,true)};const off=e=>{e.preventDefault();setControl(k,false)};
+  b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);b.addEventListener("pointercancel",off);b.addEventListener("pointerleave",off);
+});
+
+
+// ===== PREMIUM MOTORCYCLE AUDIO (procedural, smooth, non-harsh) =====
+let engine={ctx:null,master:null,engineBus:null,noiseBus:null,oscA:null,oscB:null,oscC:null,noise:null,noiseFilter:null,started:false,boosting:false};
+let lastBoostState=false;
+
+function makeNoiseBuffer(ctx){
+  const b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);
+  const d=b.getChannelData(0);
+  let x=0;
+  for(let i=0;i<d.length;i++){
+    x=x*0.985+(Math.random()*2-1)*0.15;
+    d[i]=x;
+  }
+  return b;
+}
+function startEngineSound(){
+  try{
+    if(engine.started){ if(engine.ctx?.state==='suspended') engine.ctx.resume(); return; }
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return;
+    const ctx=new AC(); engine.ctx=ctx;
+    const master=ctx.createGain(); master.gain.value=.72;
+    const comp=ctx.createDynamicsCompressor();
+    comp.threshold.value=-18; comp.knee.value=18; comp.ratio.value=4; comp.attack.value=.006; comp.release.value=.14;
+    const engineBus=ctx.createGain(); engineBus.gain.value=.0001;
+    const noiseBus=ctx.createGain(); noiseBus.gain.value=.0001;
+    engine.master=master;engine.engineBus=engineBus;engine.noiseBus=noiseBus;
+    engineBus.connect(comp);noiseBus.connect(comp);comp.connect(master);master.connect(ctx.destination);
+
+    // Smooth 4-stroke-like tone: low fundamental + triangle harmonic + quiet high harmonic.
+    const a=ctx.createOscillator(), b=ctx.createOscillator(), c=ctx.createOscillator();
+    a.type='sine'; b.type='triangle'; c.type='sine';
+    a.frequency.value=55; b.frequency.value=110; c.frequency.value=220;
+    const ga=ctx.createGain(),gb=ctx.createGain(),gc=ctx.createGain();
+    ga.gain.value=.62;gb.gain.value=.22;gc.gain.value=.055;
+    a.connect(ga);b.connect(gb);c.connect(gc);ga.connect(engineBus);gb.connect(engineBus);gc.connect(engineBus);
+    a.start();b.start();c.start();engine.oscA=a;engine.oscB=b;engine.oscC=c;
+
+    const n=ctx.createBufferSource(); n.buffer=makeNoiseBuffer(ctx); n.loop=true;
+    const nf=ctx.createBiquadFilter(); nf.type='lowpass'; nf.frequency.value=700; nf.Q.value=.55;
+    const ng=ctx.createGain(); ng.gain.value=.035;
+    n.connect(nf);nf.connect(ng);ng.connect(noiseBus);n.start();
+    engine.noise=n;engine.noiseFilter=nf;
+    engine.started=true;
+  }catch(e){ console.warn('Audio unavailable',e); }
+}
+function updateEngineSound(){
+  if(!engine.started||!engine.ctx)return;
+  const ctx=engine.ctx;
+  const s=Math.max(0,Math.min(1.9,state.speed||0));
+  const up=(profile.upgrades[state.bike]||{}).speed||0;
+  const rpm=58+s*82+up*2.5;
+  const now=ctx.currentTime;
+  engine.oscA.frequency.setTargetAtTime(rpm,now,.055);
+  engine.oscB.frequency.setTargetAtTime(rpm*2.01,now,.055);
+  engine.oscC.frequency.setTargetAtTime(rpm*4.02,now,.055);
+  engine.noiseFilter.frequency.setTargetAtTime(420+s*760,now,.08);
+  const moving=state.running&&!state.paused;
+  const vol=moving ? .045+s*.042 : .0001;
+  engine.engineBus.gain.setTargetAtTime(vol,now,.08);
+  engine.noiseBus.gain.setTargetAtTime(moving ? .006+s*.012 : .0001,now,.1);
+}
+function playBoostSound(){
+  if(!engine.started||!engine.ctx)return;
+  const ctx=engine.ctx, now=ctx.currentTime;
+  const o=ctx.createOscillator(), g=ctx.createGain(), f=ctx.createBiquadFilter();
+  o.type='sine';o.frequency.setValueAtTime(180,now);o.frequency.exponentialRampToValueAtTime(760,now+.42);
+  f.type='lowpass';f.frequency.value=1500;g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.11,now+.035);g.gain.exponentialRampToValueAtTime(.0001,now+.48);
+  o.connect(f);f.connect(g);g.connect(ctx.destination);o.start(now);o.stop(now+.5);
+}
+function updateBoostAudio(){
+  const active=!!(keys.nitro&&state.nitro>0&&state.running&&!state.paused);
+  if(active&&!lastBoostState)playBoostSound();
+  lastBoostState=active;
+}
+
+function resetGame(){
+  const up=profile.upgrades[state.bike]||{speed:0,handling:0,health:0,nitro:0};
+  state.level=Math.min(30,profile.level||1);
+  state.score=0;state.coins=0;state.health=100+up.health*10;state.nitro=100+up.nitro*10;state.shield=0;state.magnet=0;state.distance=0;state.time=0;state.speed=0;state.running=true;state.paused=false;
+  hide("#result");hide("#pauseOverlay");hide("#menu");show("#game");buildWorld();populate();updateHUD();
+  sound(220,.12,"square");
+}
+function updateHUD(){
+  $("#score").textContent=Math.floor(state.score);$("#coins").textContent=state.coins;$("#health").textContent=Math.max(0,Math.floor(state.health));
+  $("#nitroBar").style.width=state.nitro+"%";$("#shieldBadge").classList.toggle("off",state.shield<=0);$("#magnetBadge").classList.toggle("off",state.magnet<=0);
+  $("#levelLabel").textContent=state.mode==="endless"?"ENDLESS • "+Math.floor(state.distance)+"m":"LEVEL "+state.level;
+  $("#progress").style.width=(state.mode==="endless"?Math.min(100,state.distance/10):Math.min(100,state.distance/(70+state.level*16)*100))+"%";
+}
+function moveWorld(dt){
+  const speed=state.speed;
+  [...roadSegments,...obstacles,...collectibles,...powerups,...scenery].forEach(o=>o.position.z+=speed*dt*7);
+  roadSegments=roadSegments.filter(o=>{if(o.position.z>15){o.position.z-=360}return true});
+  scenery.forEach(o=>{if(o.position.z>20){o.position.z-=380}});
+  obstacles=obstacles.filter(o=>{if(o.position.z>15){scene.remove(o);return false}return true});
+  collectibles=collectibles.filter(o=>{if(o.position.z>15){scene.remove(o);return false}return true});
+  powerups=powerups.filter(o=>{if(o.position.z>15){scene.remove(o);return false}return true});
+  const lastZ=Math.min(-15,...obstacles.map(o=>o.position.z),...collectibles.map(o=>o.position.z));
+  if(lastZ>-80) {const z=-220-Math.random()*80;if(Math.random()<.75)spawnObstacle(z);if(Math.random()<.8)spawnCoin(z-3);if(Math.random()<.15)spawnPower(z-6)}
+}
+function collide(a,b,dist=1){
+  return Math.abs(a.position.x-b.position.x)<dist && Math.abs(a.position.z-b.position.z)<1.15;
+}
+function gameUpdate(dt){
+  if(!state.running||state.paused)return;
+  state.time+=dt; state.distance+=state.speed*dt*8;
+  const b=bikes[state.bike];
+  const up=profile.upgrades[state.bike]||{speed:0,handling:0,health:0,nitro:0};
+  const speedMultiplier=b.speed*(1+up.speed*.055);
+  const handlingMultiplier=b.handling*(1+up.handling*.055);
+  let target=keys.accelerate?1.28:0.62;if(keys.brake)target=.20;
+  const boosting = keys.nitro && state.nitro>0;
+  if(boosting){
+    target=2.05*(1+up.speed*.035);
+    state.nitro=Math.max(0,state.nitro-dt*24);
+    
+  }else{
+    state.nitro=Math.min(100+up.nitro*10,state.nitro+dt*(5.5+up.nitro));
+  }
+  state.speed += (target*speedMultiplier-state.speed)*dt*3.6;
+  const steer=(keys.right?1:0)-(keys.left?1:0);state.steer += (steer-state.steer)*dt*8;
+  bike.position.x+=state.steer*dt*(5.8+state.speed*1.1)*handlingMultiplier;bike.position.x=THREE.MathUtils.clamp(bike.position.x,-3.25,3.25);bike.rotation.z=-state.steer*.16;
+  camera.position.x+=(bike.position.x*.38-camera.position.x)*dt*3;camera.lookAt(bike.position.x*.2,1,-18);
+  moveWorld(dt);
+  obstacles.forEach(o=>{
+    if(!o.userData.hit&&collide(bike,o,.9)){
+      o.userData.hit=true;
+      if(state.shield>0){state.shield=0;sound(100,.15,"sawtooth")}
+      else{state.health-=Math.max(8,25-up.health*3);state.speed*=.45;sound(75,.22,"sawtooth");}
+      o.position.z+=2;
+    }
+  });
+  collectibles.forEach(o=>{
+    o.rotation.z+=dt*5;
+    const d=Math.abs(bike.position.x-o.position.x),z=Math.abs(bike.position.z-o.position.z);
+    if(d<1.05&&z<1.2){state.coins++;profile.coins++;state.score+=100;sound(740,.06);saveProfile();renderCareerUI();o.position.z=30}
+    else if(state.magnet>0&&d<3.2&&z<6)o.position.x+=(bike.position.x-o.position.x)*dt*4;
+  });
+  powerups.forEach(o=>{
+    o.rotation.y+=dt*3;
+    if(collide(bike,o,1)){const k=o.userData.kind;if(k==="shield")state.shield=8;if(k==="magnet")state.magnet=10;if(k==="health")state.health=Math.min(100,state.health+30);if(k==="nitro")state.nitro=100;state.score+=150;sound(880,.1,"triangle");o.position.z=30}
+  });
+  if(state.shield>0)state.shield=Math.max(0,state.shield-dt);if(state.magnet>0)state.magnet=Math.max(0,state.magnet-dt);
+  state.score+=state.speed*dt*10;
+  updateHUD();
+  updateEngineSound();
+  updateBoostAudio();
+  if(state.health<=0)endGame(false);
+  if(state.mode==="levels"&&state.distance>=70+state.level*16)endGame(true);
+}
+function endGame(win){
+  state.running=false;
+  const final=Math.floor(state.score);
+  best=Math.max(best,final);profile.best=Math.max(profile.best,final);
+  if(win && state.mode==="levels"){
+    profile.level=Math.max(profile.level,Math.min(30,state.level+1));
+    profile.coins += 250 + state.level*25;
+  }
+  saveProfile();localStorage.setItem("motoRushBest",best);renderCareerUI();
+  $("#resultIcon").textContent=win?"🏆":"💥";$("#resultTitle").textContent=win?"LEVEL COMPLETE!":"BIKE CRASHED";
+  $("#finalScore").textContent=final;$("#finalCoins").textContent=state.coins;$("#finalTime").textContent=Math.floor(state.time)+"s";$("#bestScore").textContent=best;
+  $("#nextBtn").textContent=win?"NEXT RIDE ➜":"TRY AGAIN";show("#result");sound(win?980:90,.25,win?"triangle":"sawtooth");
+}
+function togglePause(){if(!state.running)return;state.paused=!state.paused;$("#pauseOverlay").classList.toggle("hidden",!state.paused)}
+$("#pauseBtn").onclick=togglePause;$("#resumeBtn").onclick=togglePause;$("#restartBtn").onclick=resetGame;
+$("#quitBtn").onclick=()=>{state.running=false;hide("#pauseOverlay");hide("#game");show("#menu")};
+$("#startBtn").onclick=async()=>{if(!renderer)init3D();startEngineSound();if(engine.ctx?.state==="suspended")await engine.ctx.resume();resetGame()};
+$("#nextBtn").onclick=()=>{if(state.mode==="levels")state.level=Math.min(30,Math.max(profile.level,state.level+1));resetGame()};
+$("#resultMenuBtn").onclick=()=>{hide("#result");hide("#game");show("#menu")};
+$("#howBtn").onclick=()=>show("#howModal");$("#aboutBtn").onclick=()=>show("#aboutModal");
+$$("[data-close]").forEach(b=>b.onclick=()=>hide("#"+b.dataset.close));
+
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock?.getDelta()||.016,.05);gameUpdate(dt);if(renderer&&scene&&camera)renderer.render(scene,camera)}
+addEventListener("resize",()=>{if(camera&&renderer){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}});
+
+setTimeout(()=>hide("#loading"),700);
+
+</script>
+</body>
+</html>
